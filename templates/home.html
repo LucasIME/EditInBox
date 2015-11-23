@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block head %}
+    <script>
+    $( document ).ready(function() {
+            $("#Home").addClass("active");
+});
+    </script>
+{% endblock %}
+{% block content %}
+     <form action="{{url_for('search_images')}}" method="post">
+        <div class="ui large action input">
+            <input type="text" name="search" placeholder="Search for Images...">
+            <button class="ui icon button">
+                <i class="search icon"></i>
+            </button>
+        </div>
+    </form>
+
+    <h2> Or</h2>
+
+    <form action="{{url_for('upload_file')}}" enctype="multipart/form-data" method="post">
+
+        <div class="field">
+            <div class="ui action input">
+                <input type="text" id="_attachmentName" placeholder="Upload an Image...">
+                <label for="attachmentName" class="ui icon button btn-file">
+                    <i class="large attach icon"></i>
+                    <input type="file" id="attachmentName" name="attachmentName" style="display: none">
+                </label>
+            </div>
+        </div>
+                <p/>
+        <div class="inline field">
+            <class="ui checkbox">
+                <input type="checkbox" tabindex="0" name="index" class="hidden">
+                <label>Wanna index your files so you can search for them later? </label>
+            </div>
+        </div>
+                <p/>
+
+        <div>
+            <input type="submit" value="Send" style="display: none">
+            <button class="ui basic button">
+                <i class="cloud upload icon"></i>
+                Upload!
+            </button>
+        </div>
+
+    </form>
+{% endblock %}
