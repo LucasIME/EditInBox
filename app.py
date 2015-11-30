@@ -1,24 +1,18 @@
 from flask import Flask, request, session, url_for, render_template, redirect, send_from_directory, flash
 from flask_oauth import OAuth
 from werkzeug import secure_filename
-# import dropbox
-from dropbox import session as dropbox_session
+from dropbox import session as dropbox_session, client
 import os
+from config import *
 
-UPLOAD_FOLDER = './uploadedFiles/'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
-APP_KEY = "qwmdl635urnxv8a"
-APP_SECRET = "j0z5rlprmbm2r3l"
-ACCESS_TYPE = 'app_folder'
+import base64
+from flask import abort, Flask, redirect, request, session, url_for
+import os
+import requests
+import urllib
+
 dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
-
-
-dropboxKey = "PfypITz2Rm0AAAAAAABEM6WIGXQXw5CNZmqhPyXCxAwnkrD5ZOQ5R1MyVgOgKP88"
-
-# dbx = dropbox.Dropbox(dropboxKey)
-
 
 app = Flask(__name__)
 app.debug = True
@@ -47,6 +41,18 @@ def about():
 def finished():
     return render_template('finished.html')
 
+@app.route('/login')
+def login():
+    return  redirect(url_for('authorize_dropbox'))
+
+@app.route('/logout')
+def logout():
+    del session['dropbox_reqtock']
+    del session['name']
+    del session['access_token']
+    global dropbox_sess
+    dropbox_sess =  dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
+    return redirect(url_for('index'))
 
 #The first step in the process.
 @app.route('/authorize/dropbox/')
@@ -61,6 +67,7 @@ def authorize_dropbox():
 		'oauth_token_secret':request_token.secret
 	};
 	#Second stept of OAuth
+
 	url = dropbox_sess.build_authorize_url(request_token, oauth_callback=callback)
 	return redirect(url)
 
@@ -76,22 +83,32 @@ def dropbox_authorized():
         request_token = dropbox_session.OAuthToken(request_token_dic.get('oauth_token'),
                                                    request_token_dic.get('oauth_token_secret'))
         #session.pop('dropbox_reqtock', None)
-        session['username'] = str(request_token)
         # Last step of OAuth
         access_token = dropbox_sess.obtain_access_token(request_token);
-        values = {
-            'username': session['username'],
-            'oauth_token': access_token.key,
-            'oauth_token_secret': access_token.secret,
-        }
         # save acess_tokens
+        session["access_token"] = {
+            #"access_token" : access_token,
+            'key': access_token.key,
+            'secret': access_token.secret,
+        }
+        #minha linha
+        dropbox_sess.set_token(access_token.key, access_token.secret)
+        cliente = client.DropboxClient(dropbox_sess)
+        session["name"] = cliente.account_info()
     return redirect(next_url)
 
 
 @app.route('/images/', methods=['GET', 'POST'])
 def search_images():
     if request.method == 'POST':
-        return request.form['search']
+        #return request.form['search']
+        cliente = client.DropboxClient(dropbox_sess)
+        resp = ""
+        d = cliente.account_info()
+        for p in d:
+            resp += str(d[p])+ '\n'
+        return resp
+        return str(app.config)
 
 
 @app.route('/index_images')
@@ -147,6 +164,7 @@ def uploaded_file(filename):
 # @app.route('/post/<int:post_id>')
 # def show_post(post_id):
 #    return 'Post %d' % post_id
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=13477)

@@ -7,57 +7,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.js"></script>
     <title>EditInBox</title>
 
-    <!-- Dropzone -->
-    <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
-    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+
     {% block head %}
     {% endblock %}
 </head>
 
 <body>
 <div id="header">
-     <div class="ui large menu">
-    <!--active --><a class="item" href="{{url_for('index')}}" id="Home">
+    <div class="ui large menu">
+        <!--active --><a class="item" href="{{url_for('index')}}" id="Home">
         Home
     </a>
-    <a class="item" href="{{url_for('faq')}}" id="FAQ">
-        FAQ
-    </a>
-    <a class="item" href="{{url_for('about')}}" id="About">
-        About
-    </a>
+        <a class="item" href="{{url_for('faq')}}" id="FAQ">
+            FAQ
+        </a>
+        <a class="item" href="{{url_for('about')}}" id="About">
+            About
+        </a>
 
-         <a class="item" href="{{url_for('authorize_dropbox')}}">Drop</a>
+        <a class="item" href="{{url_for('authorize_dropbox')}}">Drop</a>
 
-    <div class="right menu">
-        <div class="ui dropdown item">
-            Language <i class="dropdown icon"></i>
-
-            <div class="menu">
-                <a class="item">English</a>
-                <a class="item">Russian</a>
-                <a class="item">Spanish</a>
+        <div class="right menu">
+            {% if not session['access_token'] %}
+            <a href="{{ url_for('login') }}">
+                <div class="item">
+                    <div class="ui primary button">
+                        Log in
+                    </div>
+                    <i class="dropbox icon"></i>
+                </div>
+            </a>
+            {% else %}
+            <div class="item">
+                Hello, {{ session['name']['display_name'] }}
+                <i class="dropbox icon"></i>
+                <a href="{{ url_for('logout') }}">
+                    Log out
+                </a>
             </div>
-        </div>
-        <div class="item">
-            <div class="ui primary button">Sign In</div>
-        </div>
-        <div class="item">
-            <div class="ui primary button">Sign Up</div>
-            <i class="dropbox icon"></i>
+            {% endif %}
         </div>
     </div>
-</div>
 
-<h2 class="ui center aligned icon header">
-    <i class="cubes icon"></i>
-    EditInBox
-</h2>
+    <h2 class="ui center aligned icon header">
+        <i class="cubes icon"></i>
+        EditInBox
+    </h2>
 
 </div>
 
 <center>
-<div id="content">{% block content%}{% endblock %}</div>
+    <div id="content">{% block content%}{% endblock %}</div>
 </center>
 
 <script>
@@ -134,6 +134,8 @@
                 $('#attachmentName').removeAttr('name'); // cancel upload file.
             }
         });
+
+
 
 
 
