@@ -23,8 +23,6 @@
             About
         </a>
 
-        <a class="item" href="{{url_for('authorize_dropbox')}}">Drop</a>
-
         <div class="right menu">
             {% if not session['access_token'] %}
             <a href="{{ url_for('login') }}">

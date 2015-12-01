@@ -94,7 +94,7 @@ def dropbox_authorized():
 @app.route('/images/', methods=['GET', 'POST'])
 def search_images():
     if request.method == 'POST':
-        index = request.form['search']
+        index = request.form['search'].lower()
         search_results = getFromDB(index)
         return render_template("search_results.html", search_results = search_results )
         #return request.form['search']
@@ -107,9 +107,12 @@ def search_images():
         #return str(app.config)
 
 
-@app.route('/index_images')
+@app.route('/index_images', methods = [ 'GET', 'POST'])
 def index_images():
-    pass
+    if request.method == 'POST':
+        for url in request.form:
+            addtoDB(request.form[url].lower(), url)
+        return custom('Finished')
 
 
 def allowed_file(filename):
@@ -124,26 +127,20 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-     #        config = {
-	# 	'name':  'Catastrophe!',
-	# 	'title': 'Catastrophe!',
-	# 	'description': 'Cute kitten being cute'
-	# }
-            #imgurResponse = imgurClient.upload_from_path(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            imgurResponse = imgurClient.upload_from_path(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             #addtoDB(index, imgurResponse['link'])
             #return str(imgurResponse)
-            if session["access_token"]:
+            if "access_token" in session:
                 cliente = client.DropboxClient(dropbox_sess)
                 f = open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 response = cliente.put_file("/"+filename, f)
                 #return str(response)
 
-        if request.form.get('index') == 'on':
-            filenames = [filename]
-            return redirect(url_for('index_images', filenames=filenames))
-        else:
-            return custom('Finished')
+            if request.form.get('index') == 'on':
+                urls = [ imgurResponse['link']]
+               # return redirect(url_for('index_images', urls=urls))
+                return render_template('index_images.html', urls = urls)
+        return custom('Finished')
 
 
 @app.route('/uploads/<filename>')

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block head %}
+    <script>
+    $( document ).ready(function() {
+            $("#Home").addClass("active");
+});
+    </script>
+{% endblock %}
+{% block content %}
+    <form action="{{url_for('index_images')}}" method="post">
+        <ul>
+        {% for url in urls %}
+            <li>
+        <div class="ui large action input">
+            <img src="{{url}}">
+            <input type="text" name="{{url}}" placeholder="Give this image an index">
+            <button class="ui icon button">
+                <i class="search icon"></i>
+            </button>
+        </div>
+            </li>
+        {% endfor %}
+        </ul>
+    </form>
+{% endblock %}
