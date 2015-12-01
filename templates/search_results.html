@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block head %}
+    <script>
+    $( document ).ready(function() {
+            $("#Home").addClass("active");
+});
+    </script>
+{% endblock %}
+{% block content %}>
+        {% if not search_results %}
+            <h2> No Images with this index</h2>
+{% else %}
+		<ul>
+			{% for link in search_results %}
+				<li><img src="{{link}}"></li>
+			{% endfor %}
+		</ul>
+{% endif %}
+{% endblock %}

@@ -4,15 +4,10 @@ from werkzeug import secure_filename
 from dropbox import session as dropbox_session, client
 import os
 from config import *
-
-
-import base64
-from flask import abort, Flask, redirect, request, session, url_for
-import os
-import requests
-import urllib
+from imgurpython import ImgurClient
 
 dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
+imgurClient = ImgurClient(IMGUR_KEY, IMGUR_SECRET)
 
 app = Flask(__name__)
 app.debug = True
@@ -36,10 +31,9 @@ def faq():
 def about():
     return render_template('about.html')
 
-
-@app.route('/finished')
-def finished():
-    return render_template('finished.html')
+@app.route('/custom/<text>')
+def custom(text):
+    return render_template('custom.html', text = text)
 
 @app.route('/login')
 def login():
@@ -97,18 +91,20 @@ def dropbox_authorized():
         session["name"] = cliente.account_info()
     return redirect(next_url)
 
-
 @app.route('/images/', methods=['GET', 'POST'])
 def search_images():
     if request.method == 'POST':
+        index = request.form['search']
+        search_results = getFromDB(index)
+        return render_template("search_results.html", search_results = search_results )
         #return request.form['search']
-        cliente = client.DropboxClient(dropbox_sess)
-        resp = ""
-        d = cliente.account_info()
-        for p in d:
-            resp += str(d[p])+ '\n'
-        return resp
-        return str(app.config)
+        #cliente = client.DropboxClient(dropbox_sess)
+        #resp = ""
+        #d = cliente.account_info()
+        #for p in d:
+        #    resp += str(d[p])+ '\n'
+        #return resp
+        #return str(app.config)
 
 
 @app.route('/index_images')
@@ -128,13 +124,26 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # return redirect(url_for('uploaded_file', filename=filename))
+
+     #        config = {
+	# 	'name':  'Catastrophe!',
+	# 	'title': 'Catastrophe!',
+	# 	'description': 'Cute kitten being cute'
+	# }
+            #imgurResponse = imgurClient.upload_from_path(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            #addtoDB(index, imgurResponse['link'])
+            #return str(imgurResponse)
+            if session["access_token"]:
+                cliente = client.DropboxClient(dropbox_sess)
+                f = open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                response = cliente.put_file("/"+filename, f)
+                #return str(response)
+
         if request.form.get('index') == 'on':
             filenames = [filename]
             return redirect(url_for('index_images', filenames=filenames))
         else:
-            return redirect(url_for('finished'))
-            # return str(request.files)
+            return custom('Finished')
 
 
 @app.route('/uploads/<filename>')
@@ -164,6 +173,32 @@ def uploaded_file(filename):
 # @app.route('/post/<int:post_id>')
 # def show_post(post_id):
 #    return 'Post %d' % post_id
+
+def addtoDB(index, url):
+    import json
+    file = open('db.json', 'r')
+    data = file.read()
+    file.close()
+    db = json.loads(data)
+    if index not in db:
+        db[index] = [url]
+    else:
+        db[index].append(url)
+    json_str = json.dumps(db)
+    file = open('db.json', 'w')
+    file.write(json_str)
+    file.close()
+
+def getFromDB(index):
+    import json
+    file = open('db.json', 'r')
+    data = file.read()
+    db = json.loads(data)
+    file.close()
+    if index not in db:
+        return []
+    else:
+        return db[index]
 
 
 if __name__ == '__main__':
