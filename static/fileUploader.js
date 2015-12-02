@@ -1,4 +1,4 @@
-    var fileExtentionRange = '.zip .rar .tar .pdf .doc .docx .xls .xlsx .ppt .pptx';
+    var fileExtentionRange = '.zip .rar .tar .pdf .doc .docx .xls .xlsx .ppt .pptx .jpg .jpeg .png .gif .JPG .JPEG';
         var MAX_SIZE = 30; // MB
 
         $(document).on('change', '.btn-file :file', function() {
@@ -34,7 +34,7 @@
 
                 $('#attachmentName').removeAttr('name'); // cancel upload file.
             }
-        });var fileExtentionRange = '.zip .rar .tar .pdf .doc .docx .xls .xlsx .ppt .pptx';
+        });var fileExtentionRange = '.zip .rar .tar .pdf .doc .docx .xls .xlsx .ppt .pptx .jpg .jpeg .png .gif .JPG .JPEG';
         var MAX_SIZE = 30; // MB
 
         $(document).on('change', '.btn-file :file', function() {

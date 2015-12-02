@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block head %}
+<script>
+    $( document ).ready(function() {
+            $("#Home").addClass("active");
+});
+
+
+</script>
+{% endblock %}
+{% block content %}
+<form action="{{url_for('process_images')}}" method="post">
+    <input type="text" name="filename" value="{{filename}}" style="display: none">
+    <div class="ui form">
+        <div class="three grouped fields">
+            <div class="field">
+                <label>New Height</label>
+                <input type="text" name="height" placeholder="New Height">
+            </div>
+            <div class="field">
+                <label>New Width</label>
+                <input type="text" name="width" placeholder="New Width">
+            </div>
+            <div class="field">
+                <label>New File format</label>
+                <select class="ui fluid search dropdown" name="format">
+                    <option value="jpg">jpg</option>
+                    <option value="png">png</option>
+                    <option value="gif">gif</option>
+                    <option value="bmp">bmp</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div>
+        <input type="submit" value="Send" style="display: none">
+        <button class="ui basic button">
+            <i class="cloud upload icon"></i>
+            Finish!
+        </button>
+    </div>
+</form>
+{% endblock %}

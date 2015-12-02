@@ -1,10 +1,10 @@
 from flask import Flask, request, session, url_for, render_template, redirect, send_from_directory, flash
-from flask_oauth import OAuth
 from werkzeug import secure_filename
 from dropbox import session as dropbox_session, client
 import os
 from config import *
 from imgurpython import ImgurClient
+from PIL import Image
 
 dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 imgurClient = ImgurClient(IMGUR_KEY, IMGUR_SECRET)
@@ -93,6 +93,7 @@ def dropbox_authorized():
 
 @app.route('/images/', methods=['GET', 'POST'])
 def search_images():
+    #return render_template("resize.html")
     if request.method == 'POST':
         index = request.form['search'].lower()
         search_results = getFromDB(index)
@@ -106,15 +107,6 @@ def search_images():
         #return resp
         #return str(app.config)
 
-
-@app.route('/index_images', methods = [ 'GET', 'POST'])
-def index_images():
-    if request.method == 'POST':
-        for url in request.form:
-            addtoDB(request.form[url].lower(), url)
-        return custom('Finished')
-
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -127,21 +119,46 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        if request.form.get('index') == 'on':
             imgurResponse = imgurClient.upload_from_path(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            #addtoDB(index, imgurResponse['link'])
-            #return str(imgurResponse)
-            if "access_token" in session:
-                cliente = client.DropboxClient(dropbox_sess)
-                f = open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                response = cliente.put_file("/"+filename, f)
-                #return str(response)
+            urls = [ imgurResponse['link']]
+            # return redirect(url_for('index_images', urls=urls))
+            return render_template('index_images.html', urls = urls, filename=filename)
 
-            if request.form.get('index') == 'on':
-                urls = [ imgurResponse['link']]
-               # return redirect(url_for('index_images', urls=urls))
-                return render_template('index_images.html', urls = urls)
-        return custom('Finished')
+            #return str(response)
+        return render_template("resize.html", filename=filename )
 
+@app.route('/index_images', methods = [ 'GET', 'POST'])
+def index_images():
+    if request.method == 'POST':
+        for url in request.form:
+            if url != 'filePath':
+                addtoDB(request.form[url].lower(), url)
+        return render_template("resize.html", filename=request.form['filename'] )
+
+@app.route('/process_images', methods = ['GET', 'POST'])
+def process_images():
+    if request.method == 'POST':
+        newWidth = int(request.form['width'])
+        newHeigth = int(request.form['height'])
+        currentFileName  = request.form['filename']
+        newFormat = request.form['format']
+        newFileName = ""
+        for i in range(len(currentFileName.split('.'))-1 ):
+            newFileName =  newFileName + currentFileName.split('.')[i] + '.'
+        newFileName = newFileName + newFormat
+        img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], currentFileName))
+        img = img.resize( (newWidth, newHeigth), Image.ANTIALIAS )
+        img.save(os.path.join(app.config['UPLOAD_FOLDER'], newFileName))
+        return final_upload(newFileName)
+
+def final_upload(filename):
+    if "access_token" in session:
+        cliente = client.DropboxClient(dropbox_sess)
+        f = open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        response = cliente.put_file("/"+filename, f)
+        return custom("Finished")
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -197,6 +214,5 @@ def getFromDB(index):
     else:
         return db[index]
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=13477)
+   app.run(host='0.0.0.0', port=13477)
