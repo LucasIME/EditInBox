@@ -1,7 +1,11 @@
+import os
+import sys
+
+sys.path.insert(1, os.path.join(os.path.abspath('.'), 'venv/lib/python2.7/site-packages'))
+
 from flask import Flask, request, session, url_for, render_template, redirect, send_from_directory, flash
 from werkzeug import secure_filename
 from dropbox import session as dropbox_session, client
-import os
 from config import *
 from imgurpython import ImgurClient
 from PIL import Image
@@ -10,7 +14,7 @@ dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 imgurClient = ImgurClient(IMGUR_KEY, IMGUR_SECRET)
 
 app = Flask(__name__)
-app.debug = True
+#app.debug = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.secret_key = "SaltySalt"
@@ -137,9 +141,26 @@ def index_images():
                 addtoDB(request.form[url].lower(), url)
         return render_template("resize.html", filename=request.form['filename'] )
 
+# @app.route('/process_images', methods = ['GET', 'POST'])
+# def process_images():
+#     if request.method == 'POST':
+#         newWidth = int(request.form['width'])
+#         newHeigth = int(request.form['height'])
+#         currentFileName  = request.form['filename']
+#         newFormat = request.form['format']
+#         newFileName = ""
+#         for i in range(len(currentFileName.split('.'))-1 ):
+#             newFileName =  newFileName + currentFileName.split('.')[i] + '.'
+#         newFileName = newFileName + newFormat
+#         img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], currentFileName))
+#         img = img.resize( (newWidth, newHeigth), Image.ANTIALIAS )
+#         img.save(os.path.join(app.config['UPLOAD_FOLDER'], newFileName))
+#         return final_upload(newFileName)
+
 @app.route('/process_images', methods = ['GET', 'POST'])
 def process_images():
     if request.method == 'POST':
+        #from google.appengime.api import images
         newWidth = int(request.form['width'])
         newHeigth = int(request.form['height'])
         currentFileName  = request.form['filename']
@@ -215,4 +236,5 @@ def getFromDB(index):
         return db[index]
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0', port=13477)
+   #app.run(host='0.0.0.0', port=13477)
+    app.run()
