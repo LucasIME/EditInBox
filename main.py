@@ -4,28 +4,18 @@ import sys
 sys.path.insert(1, os.path.join(os.path.abspath('.'), 'venv/lib/python2.7/site-packages'))
 sys.path.append('/usr/local/google_appengine')
 
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+
 import cloudstorage as gcs
 from flask import Flask, request, session, url_for, render_template, redirect, send_from_directory, flash
 from werkzeug import secure_filename
 from dropbox import session as dropbox_session, client
 from config import *
-#from imgurpython import ImgurClient
+
 from google.appengine.ext import blobstore
 from google.appengine.api import images
 
-
-cloudinary.config(
-    cloud_name = CLOUDINARY_NAME,
-    api_key = CLOUDINARY_KEY,
-    api_secret = CLOUDINARY_SECRET
-)
-
 #Setting imgut and Dropbox APIs
 dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
-#imgurClient = ImgurClient(IMGUR_KEY, IMGUR_SECRET)
 
 #Flask Configs
 app = Flask(__name__)
@@ -39,23 +29,6 @@ app.secret_key = "SaltySalt"
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('home.html')
-
-# @app.route('/', methods=['GET', 'POST'])
-# def index():
-#     filename = 'IMG_1622.JPG'
-#     blobkey =  blobstore.create_gs_key('/gs' + BUCKET_PATH + filename)
-#     a = images.get_serving_url(blobkey)
-#     return a
-#     f = gcs.open( BUCKET_PATH + currentFileName)
-#     #img = images.Image(blob_key=blobkey)
-#     img = images.Image(image_data=f.read())
-#     f.close()
-#     img.resize(width= newWidth, height=newHeigth, allow_stretch=True )
-#     processedImage = img.execute_transforms(output_encoding=encodingParameter)
-#     f = gcs.open(BUCKET_PATH + newFileName, "w")
-#     f.write(processedImage)
-#     f.close()
-
 
 @app.route('/FAQ')
 def faq():
@@ -152,12 +125,6 @@ def upload_file():
         if request.form.get('index') == 'on':
             blobkey =  blobstore.create_gs_key('/gs' + BUCKET_PATH + filename)
             urls = [images.get_serving_url(blobkey)]
-
-            #responseDict = cloudinary.uploader.upload(file)
-            #urls = [responseDict['url']]
-
-            #imgurResponse = imgurClient.upload_from_path()
-            #urls = [ imgurResponse['link']]
             return render_template('index_images.html', urls = urls, filename=filename)
         return render_template("resize.html", filename=filename )
 
@@ -168,26 +135,6 @@ def index_images():
             if url != 'filePath':
                 addtoDB(request.form[url].lower(), url)
         return render_template("resize.html", filename=request.form['filename'] )
-
-# @app.route('/process_images', methods = ['GET', 'POST'])
-# def process_images():
-#     if request.method == 'POST':
-#         newWidth = int(request.form['width'])
-#         newHeigth = int(request.form['height'])
-#         currentFileName  = request.form['filename']
-#         newFormat = request.form['format']
-#         newFileName = ""
-#         for i in range(len(currentFileName.split('.'))-1 ):
-#             newFileName =  newFileName + currentFileName.split('.')[i] + '.'
-#         newFileName = newFileName + newFormat
-#         img_data = gcs.open(BUCKET_PATH + request.form['filename'])
-#         #img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], currentFileName))
-#         img = Image.open(img_data)
-#         img = img.resize( (newWidth, newHeigth), Image.ANTIALIAS )
-#         return str(img)
-#         #img.save(os.path.join(app.config['UPLOAD_FOLDER'], newFileName))
-#         img.save("/Users/meirellu/"+ newFileName)
-#         return final_upload(newFileName)
 
 @app.route('/process_images', methods = ['GET', 'POST'])
 def process_images():
@@ -210,11 +157,7 @@ def process_images():
             newFileName =  newFileName + currentFileName.split('.')[i] + '.'
         newFileName = newFileName + newFormat
 
-        # @app.route('/', methods=['GET', 'POST'])
-        #filename = 'IMG_1622.JPG'
-        #blobkey =  blobstore.create_gs_key('/gs' + BUCKET_PATH + currentFileName)
         f = gcs.open( BUCKET_PATH + currentFileName)
-        #img = images.Image(blob_key=blobkey)
         img = images.Image(image_data=f.read())
         f.close()
         img.resize(width= newWidth, height=newHeigth, allow_stretch=True )
