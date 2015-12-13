@@ -5,6 +5,16 @@
     <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='semantic.min.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.js"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-66294810-2', 'auto');
+      ga('send', 'pageview');
+
+    </script>
     <title>EditInBox</title>
     {% block head %}
     {% endblock %}
@@ -13,34 +23,34 @@
 <body>
 <div id="header">
     <div class="ui large menu">
-        <!--active --><a class="item" href="{{url_for('index')}}" id="Home">
+        <!--active --><a class="item" href="{{ url_for('index') }}" id="Home">
         Home
     </a>
-        <a class="item" href="{{url_for('faq')}}" id="FAQ">
+        <a class="item" href="{{ url_for('faq') }}" id="FAQ">
             FAQ
         </a>
-        <a class="item" href="{{url_for('about')}}" id="About">
+        <a class="item" href="{{ url_for('about') }}" id="About">
             About
         </a>
 
         <div class="right menu">
             {% if not session['access_token'] %}
-            <a href="{{ url_for('login') }}">
-                <div class="item">
-                    <div class="ui primary button">
-                        Log in
+                <a href="{{ url_for('login') }}">
+                    <div class="item">
+                        <div class="ui primary button">
+                            Log in
+                        </div>
+                        <i class="dropbox icon"></i>
                     </div>
-                    <i class="dropbox icon"></i>
-                </div>
-            </a>
-            {% else %}
-            <div class="item">
-                Hello, {{ session['name']['display_name'] }}
-                <i class="dropbox icon"></i>
-                <a href="{{ url_for('logout') }}">
-                    Log out
                 </a>
-            </div>
+            {% else %}
+                <div class="item">
+                    Hello, {{ session['name']['display_name'] }}
+                    <i class="dropbox icon"></i>
+                    <a href="{{ url_for('logout') }}">
+                        Log out
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -53,7 +63,7 @@
 </div>
 
 <center>
-    <div id="content">{% block content%}{% endblock %}</div>
+    <div id="content">{% block content %}{% endblock %}</div>
 </center>
 
 </body>
