@@ -139,13 +139,9 @@ def index_images():
 @app.route('/process_images', methods = ['GET', 'POST'])
 def process_images():
     if request.method == 'POST':
-        newWidth = int(request.form['width'])
-        newHeigth = int(request.form['height'])
         currentFileName  = request.form['filename']
         newFormat = request.form['format']
         encodingParameter = images.JPEG
-        # if newFormat = 'jpg':
-        #     encodingParameter  = images.JPEG
         if newFormat == 'png':
             encodingParameter  = images.PNG
         if newFormat == 'gif':
@@ -160,7 +156,17 @@ def process_images():
         f = gcs.open( BUCKET_PATH + currentFileName)
         img = images.Image(image_data=f.read())
         f.close()
-        img.resize(width= newWidth, height=newHeigth, allow_stretch=True )
+
+        try:
+            newWidth = int(request.form['width'])
+        except:
+            newWidth = img.height
+        try:
+            newHeight = int(request.form['height'])
+        except:
+            newHeight = img.width
+
+        img.resize(width= newWidth, height=newHeight, allow_stretch=True )
         processedImage = img.execute_transforms(output_encoding=encodingParameter)
         f = gcs.open(BUCKET_PATH + newFileName, "w")
         f.write(processedImage)
