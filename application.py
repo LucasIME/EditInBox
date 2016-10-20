@@ -4,25 +4,37 @@ import sys
 sys.path.insert(1, os.path.join(os.path.abspath('.'), 'venv/lib/python2.7/site-packages'))
 sys.path.append('/usr/local/google_appengine')
 
+import requests
+import cloudstorage as gcs
 from flask import Flask, request, session, url_for, render_template, redirect, send_from_directory, flash
 from werkzeug import secure_filename
 from dropbox import session as dropbox_session, client
 from config import *
 from imgurpython import ImgurClient
+from google.appengine.ext import db
 from google.appengine.api import images
 #from PIL import Image
 
+
+#setting App Engine Db
+class Photo(db.Model):
+    photo = db.BlobProperty()
+
+#Setting imgut and Dropbox APIs
 dropbox_sess = dropbox_session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 imgurClient = ImgurClient(IMGUR_KEY, IMGUR_SECRET)
 
+#Flask Configs
 application = Flask(__name__)
-#application.debug = True
+application.debug = True
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 application.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 application.secret_key = "SaltySalt"
 
+#
 
-# Landing Page
+
+Landing Page
 @application.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('home.html')
@@ -104,14 +116,6 @@ def search_images():
         index = request.form['search'].lower()
         search_results = getFromDB(index)
         return render_template("search_results.html", search_results = search_results )
-        #return request.form['search']
-        #cliente = client.DropboxClient(dropbox_sess)
-        #resp = ""
-        #d = cliente.account_info()
-        #for p in d:
-        #    resp += str(d[p])+ '\n'
-        #return resp
-        #return str(application.config)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -119,16 +123,43 @@ def allowed_file(filename):
 
 
 @application.route('/upload', methods=['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         file = request.files['attachmentName']
+#         if file and allowed_file(file.filename):
+#             filename = secure_filename(file.filename)
+#             file.save(os.path.join(application.config['UPLOAD_FOLDER'], filename))
+#
+#         if request.form.get('index') == 'on':
+#             imgurResponse = imgurClient.upload_from_path(os.path.join(application.config['UPLOAD_FOLDER'], filename))
+#             urls = [ imgurResponse['link']]
+#             # return redirect(url_for('index_images', urls=urls))
+#             return render_template('index_images.html', urls = urls, filename=filename)
+#
+#             #return str(response)
+#         return render_template("resize.html", filename=filename )
+#
 def upload_file():
     if request.method == 'POST':
         file = request.files['attachmentName']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(application.config['UPLOAD_FOLDER'], filename))
+            filestream = file.read()
+
+            # photo = Photo()
+            # photo.photo = db.Blob(filestream)
+            # photo.put()
+            # flash("Photo added")
 
         if request.form.get('index') == 'on':
-            imgurResponse = imgurClient.upload_from_path(os.path.join(application.config['UPLOAD_FOLDER'], filename))
-            urls = [ imgurResponse['link']]
+            url = 'https://api.imgur.com/3/image'
+            data = { 'image':filestream, 'type':'file'}
+            h = {'Authorization': 'Client-ID %s' % IMGUR_KEY}
+            resp = requests.post( url, data = data, headers = h)
+            url = resp.json()['data']['link']
+            return url
+            #imgurResponse = imgurClient.upload_from_path(os.path.join(application.config['UPLOAD_FOLDER'], filename))
+            #urls = [ imgurResponse['link']]
             # return redirect(url_for('index_images', urls=urls))
             return render_template('index_images.html', urls = urls, filename=filename)
 
@@ -164,18 +195,6 @@ def process_images():
     if request.method == 'POST':
         pass
         #from google.appengime.api import images
-        # newWidth = int(request.form['width'])
-        # newHeigth = int(request.form['height'])
-        # currentFileName  = request.form['filename']
-        # newFormat = request.form['format']
-        # newFileName = ""
-        # for i in range(len(currentFileName.split('.'))-1 ):
-        #     newFileName =  newFileName + currentFileName.split('.')[i] + '.'
-        # newFileName = newFileName + newFormat
-        # img = Image.open(os.path.join(application.config['UPLOAD_FOLDER'], currentFileName))
-        # img = img.resize( (newWidth, newHeigth), Image.ANTIALIAS )
-        # img.save(os.path.join(application.config['UPLOAD_FOLDER'], newFileName))
-        # return final_upload(newFileName)
 
 def final_upload(filename):
     if "access_token" in session:
@@ -187,30 +206,6 @@ def final_upload(filename):
 @application.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(application.config['UPLOAD_FOLDER'], filename)
-
-
-# Using Cookies
-# from flask import make_response, request
-#
-# @application.route('/')
-# def index():
-#   username = request.cookies.get('username')
-# from flask import make_response
-#
-# @application.route('/')
-# def index():
-#    resp = make_response(render_template(...))
-#    resp.set_cookie('username', 'the username')
-#    return resp
-
-# Passing Parameters
-# @application.route('/user/<username>')
-# def show_user_profile(username):
-#    return 'User %s' % username#
-#
-# @application.route('/post/<int:post_id>')
-# def show_post(post_id):
-#    return 'Post %d' % post_id
 
 def addtoDB(index, url):
     import json
