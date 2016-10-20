@@ -1,26 +1,30 @@
 {% extends "layout.html" %}
 {% block head %}
     <script>
-    $( document ).ready(function() {
+        $(document).ready(function () {
             $("#Home").addClass("active");
-});
+        });
     </script>
 {% endblock %}
 {% block content %}
-    <form action="{{url_for('index_images')}}" method="post">
-        <input type="text" name="filename" value="{{filename}}" style="display: none">
-        <ul>
+    <form action="{{ url_for('index_images') }}" method="post">
+        <input type="text" name="filename" value="{{ filename }}" style="display: none">
         {% for url in urls %}
-            <li>
-        <div class="ui large action input">
-            <img src="{{url}}">
-            <input type="text" name="{{url}}" placeholder="Give this image an index">
-            <button class="ui icon button">
-                <i class="search icon"></i>
-            </button>
-        </div>
-            </li>
+
+            <div class="ui center aligned basic segment">
+                <img src="{{ url }}" height="300" width="300">
+
+                <div class="ui horizontal divider">
+                </div>
+
+                <div class="ui large action input">
+                <input type="text" name="{{ url }}" placeholder="Give this image an index">
+                <button class="ui icon button">
+                    <i class="save icon"></i>
+                </button>
+            </div>
+            </div>
+
         {% endfor %}
-        </ul>
     </form>
 {% endblock %}
