@@ -44,5 +44,5 @@ uritemplate==0.6
 urllib3==1.12
 wcwidth==0.1.5
 websocket-client==0.34.0
-Werkzeug==0.10.4
+Werkzeug==0.15.3
 wheel==0.24.0
