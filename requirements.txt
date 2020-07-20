@@ -34,7 +34,7 @@ pycparser==2.14
 pyimgur==0.5.3
 pyOpenSSL==0.15.1
 python-dateutil==2.4.2
-PyYAML==3.11
+PyYAML==5.1
 requests==2.6.2
 simplejson==3.8.1
 six==1.10.0
