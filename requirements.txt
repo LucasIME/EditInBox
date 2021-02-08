@@ -16,7 +16,7 @@ ez-setup==0.9
 Flask==1.0
 GoogleAppEngineCloudStorageClient==1.9.22.1
 googledatastore==3.0.2b1
-httplib2==0.18.0
+httplib2==0.19.0
 idna==2.0
 imgurpython==1.1.6
 ipaddress==1.0.15
