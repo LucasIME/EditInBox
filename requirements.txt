@@ -21,7 +21,7 @@ idna==2.0
 imgurpython==1.1.6
 ipaddress==1.0.15
 itsdangerous==0.24
-Jinja2==2.10.1
+Jinja2==2.11.3
 jmespath==0.9.0
 MarkupSafe==0.23
 ndg-httpsclient==0.4.0
