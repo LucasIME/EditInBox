@@ -27,7 +27,7 @@ MarkupSafe==0.23
 ndg-httpsclient==0.4.0
 oauth2client==1.2
 pathspec==0.3.3
-Pillow==7.1.0
+Pillow==9.3.0
 protobuf==2.5.0
 pyasn1==0.1.9
 pycparser==2.14
